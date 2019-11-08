@@ -1,0 +1,55 @@
+(2) Raw Data
+
+
+2.1) Download data ﬁle
+curl -O curl -O  ftp://eclipse.ncdc.noaa.gov/pub/ibtracs/v03r10/all/csv/year/Year.2010.ibtracs_all.v03r10.csv
+curl -O curl -O  ftp://eclipse.ncdc.noaa.gov/pub/ibtracs/v03r10/all/csv/year/Year.2011.ibtracs_all.v03r10.csv
+curl -O curl -O  ftp://eclipse.ncdc.noaa.gov/pub/ibtracs/v03r10/all/csv/year/Year.2012.ibtracs_all.v03r10.csv
+curl -O curl -O  ftp://eclipse.ncdc.noaa.gov/pub/ibtracs/v03r10/all/csv/year/Year.2013.ibtracs_all.v03r10.csv
+curl -O curl -O  ftp://eclipse.ncdc.noaa.gov/pub/ibtracs/v03r10/all/csv/year/Year.2014.ibtracs_all.v03r10.csv
+curl -O curl -O  ftp://eclipse.ncdc.noaa.gov/pub/ibtracs/v03r10/all/csv/year/Year.2015.ibtracs_all.v03r10.csv
+
+
+
+2.2) Assembling ibtracs-2010-2015.csv
+head -2 Year.2010.ibtracs_all.v03r10.csv > header.csv
+cut -f 1-12 -d "," header.csv > head.csv
+
+tail -n +4 Year.2010.ibtracs_all.v03r10.csv > 2010.csv
+cut -f 1-12 -d "," 2010.csv > 10.csv
+
+tail -n +4 Year.2011.ibtracs_all.v03r10.csv > 2011.csv
+cut -f 1-12 -d "," 2011.csv > 11.csv
+
+tail -n +4 Year.2012.ibtracs_all.v03r10.csv > 2012.csv
+cut -f 1-12 -d "," 2012.csv > 12.csv
+
+tail -n +4 Year.2013.ibtracs_all.v03r10.csv > 2013.csv
+cut -f 1-12 -d "," 2013.csv > 13.csv
+
+tail -n +4 Year.2014.ibtracs_all.v03r10.csv > 2014.csv
+cut -f 1-12 -d "," 2014.csv > 14.csv
+
+tail -n +4 Year.2015.ibtracs_all.v03r10.csv > 2015.csv
+cut -f 1-12 -d "," 2015.csv > 15.csv
+
+
+cat head.csv 10.csv 11.csv 12.csv 13.csv 14.csv 15.csv >  ibtracs-2010-2015.csv
+
+
+
+
+(3) More Unix Redirections, Pipes, and Filters
+
+3.1) Serial Number of Storms (2010-2015)
+tail -n +3 ibtracs-2010-2015.csv > dat.csv
+cut -f 1 -d "," dat.csv |uniq > ../output/serial-numbers.txt
+
+3.2) Total number of records in each year
+cut -f 2 -d "," dat.csv | uniq -c > ../output/records-per-year.txt
+
+3.3) Basin Counts
+cut -f 4 -d "," dat.csv | uniq -c > ../output/basin-frequencies.txt
+
+3.4) Sub-Basin Counts
+cut -f 5 -d "," dat.csv | uniq -c > ../output/sub-basin-frequencies.txt

@@ -1,0 +1,122 @@
+# ===================================================================
+# Title: exploratory data analysis
+# Description:
+#   The analysis of data of storms betwwen 2010 and 2015
+# Input(s): data from 'ibtracs-2010-2015.csv' 
+# Output(s): eda-script.R
+# Author: Jiale  Zha
+# Date: 10-16-2019
+# ===================================================================
+
+  
+
+  
+
+knitr::opts_chunk$set(echo = TRUE)
+
+
+
+library("readr")
+library("ggplot2")
+library("dplyr")
+library("lubridate")
+
+
+### 4) Data Importing in R
+
+col_names <- c("serial_num","season","num","basin","sub_basin","name","iso_time","nature","latitude","longitude","wind","press")
+#col_types <- c("character","integer","character","factor","character","character","character","character","real","real","real","real")
+cols_types <- list( serial_Num = col_character(),
+                    season = col_integer(),
+                    num = col_integer(),
+                    basin = col_factor(),
+                    sub_basin = col_character(),
+                    name = col_character(),
+                    iso_time = col_character(),
+                    nature = col_character(),
+                    latitude = col_double(),
+                    longitude = col_double(),
+                    wind = col_double(),
+                    press = col_double())
+dat <- read_csv("../data/ibtracs-2010-2015.csv ", na = c("-999","-1.0","0.0"),col_names = col_names,col_types = cols_types,skip = 2)
+head(dat)
+
+
+
+sink("../output/data-summary.txt")
+summary(dat)
+sink()
+
+
+### 5) Data Visualization
+
+#### 1)
+
+mapword <- borders("world",fill = "pink",colour = "green")
+storms_point <- geom_point(data=data.frame(longitude=dat$longitude,latitude=dat$latitude,press=dat$press),aes(x=longitude,y=latitude,col=press),size=0.05)
+equator <- geom_point(data=data.frame(y=0,x=-1000:1000),aes(x=x,y=y),color="black",size=0.5)
+pdf("../images/map_all_storms.pdf",height = 10,width =10)
+ggplot()+mapword+storms_point+xlim(-200,200)+ylim(-100,100)+equator+theme_bw()+labs(title = "The plot of storms in the world")
+dev.off()
+
+
+
+
+png("../images/map_all_storms.png",height = 1800,width = 2400)
+ggplot()+mapword+storms_point+xlim(-200,200)+ylim(-100,100)+equator+theme_bw()+labs(title = "The plot of storms in the world")+theme(
+  axis.text = element_text(size = 50),
+  plot.title = element_text(size = 75),
+  axis.title=element_text(size=50),
+  legend.text = element_text(size=50),
+  legend.title = element_text(size=50),
+  legend.key.size = unit(2,"cm"))
+dev.off()
+
+
+#### 2)
+
+
+mapword <- borders("world",fill = "pink",colour = "green")
+EP_NA_storms_by_year <- rbind(dat[as.character(dat$basin)=="EP",],dat[as.character(dat$basin)=="NA",])
+EP_NA_storms_point_by_year <- 
+  geom_point(data=data.frame(longitude=EP_NA_storms_by_year$longitude,latitude=EP_NA_storms_by_year$latitude,year=EP_NA_storms_by_year$season,speed=EP_NA_storms_by_year$wind),aes(x=longitude,y=latitude,col=speed),size=0.1)
+equator <- geom_point(data=data.frame(y=0,x=-1000:1000),aes(x=x,y=y),color="black",size=0.5)
+pdf("../images/map-ep-na-storms-by-year.pdf",height = 10, width = 12)
+ggplot()+mapword+EP_NA_storms_point_by_year+xlim(-200,200)+ylim(-100,100)+equator+theme_bw()+labs(title = "The plot of storms in the basins EP and NA, facetted by year")+facet_wrap(~year,ncol=2)
+dev.off()
+
+
+png("../images/map-ep-na-storms-by-year.png",height = 1800,width = 2400)
+ggplot()+mapword+EP_NA_storms_point_by_year+xlim(-200,200)+ylim(-100,100)+equator+theme_bw()+labs(title = "The plot of storms in the basins EP and NA, facetted by year")+facet_wrap(~year,ncol=2 )+theme(
+  axis.text = element_text(size = 50),
+  plot.title = element_text(size = 75),
+  axis.title=element_text(size=50),
+  legend.text = element_text(size=20),
+  legend.title = element_text(size=50),
+  legend.key.size = unit(2,"cm"))
+dev.off()
+
+
+
+
+
+mapword <- borders("world",fill = "pink",colour = "black")
+EP_NA_storms_by_month <- rbind(dat[as.character(dat$basin)=="EP",],dat[as.character(dat$basin)=="NA",])
+EP_NA_storms_by_month <-  mutate(EP_NA_storms_by_month,month_time=month(EP_NA_storms_by_month$iso_time))
+EP_NA_storms_point_by_month <- 
+  geom_point(data=data.frame(longitude=EP_NA_storms_by_month$longitude,latitude=EP_NA_storms_by_month$latitude,month_time=EP_NA_storms_by_month$month_time,nature=EP_NA_storms_by_month$nature),aes(x=longitude,y=latitude,col=nature),size=0.1)
+equator <- geom_point(data=data.frame(y=0,x=-1000:1000),aes(x=x,y=y),color="black",size=1.5)
+pdf("../images/map-ep-na-storms-by-month.pdf",height = 30,width = 10)
+ggplot()+mapword+EP_NA_storms_point_by_month+xlim(-200,200)+ylim(-100,100)+equator+theme_bw()+labs(title = "The plot of storms in the basins EP and NA, facetted by month")+facet_wrap(~month_time,ncol=1,nrow=9)
+dev.off()
+
+
+png("../images/map-ep-na-storms-by-month.png",height = 2400,width = 2400)
+ggplot()+mapword+EP_NA_storms_point_by_month+xlim(-200,200)+ylim(-100,100)+equator+theme_bw()+labs(title = "The plot of storms in the basins EP and NA, facetted by month")+facet_wrap(~month_time,ncol=2,nrow=5)+theme(
+  axis.text = element_text(size = 30),
+  plot.title = element_text(size = 55),
+  axis.title=element_text(size=30),
+  legend.text = element_text(size=40),
+  legend.title = element_text(size=50),
+  legend.key.size = unit(5,"cm"))
+dev.off()
